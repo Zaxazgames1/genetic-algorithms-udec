@@ -6,19 +6,20 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="genetic-algorithms-udec",
     version="1.0.0",
-    author="Johan [Tu Nombre]",
-    author_email="tu_email@email.com",
+    author="Johan Sebastian Rojas Ramirez, Julian Lara Beltran",
+    author_email="johansrojas@ucundinamarca.edu.co",
     description="Librería de Algoritmos Genéticos para Machine Learning - Universidad de Cundinamarca",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/tu_usuario/genetic-algorithms-udec",
+    url="https://github.com/Zaxazgames1/genetic-algorithms-udec",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Development Status :: 3 - Alpha",
-        "Intended Audience :: Developers",
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Education",
+        "Intended Audience :: Science/Research", 
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
@@ -26,7 +27,6 @@ setup(
     install_requires=[
         "numpy>=1.19.0",
         "matplotlib>=3.3.0",
-        "tkinter>=8.6",
         "Pillow>=8.0.0",
     ],
     extras_require={

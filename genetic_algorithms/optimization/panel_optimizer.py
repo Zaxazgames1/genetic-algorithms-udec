@@ -51,7 +51,7 @@ class SolarPanelIndividual(Individual):
             latitude, inclination, season
         )
         
-        if theoretical_distance == float('inf'):
+        if theoretical_distance == float('inf') or theoretical_distance <= 0:
             return -1000  # Penalización severa
         
         # Penalizar si hay sombras
@@ -83,11 +83,12 @@ class SolarPanelIndividual(Individual):
                    (panel_length * math.sin(inclination_rad)) / 
                    math.tan(alpha_min_rad))
         
-        return distance
+        return max(distance, 0.1)  # Evitar valores negativos
     
     def _mutate_gene(self, gene):
         """Muta el gen dentro de los límites permitidos"""
-        mutated = gene + np.random.normal(0, 0.1)
+        # Mutación gaussiana
+        mutated = gene + np.random.normal(0, 0.2)
         return np.clip(mutated, self.min_distance, self.max_distance)
 
 
@@ -151,8 +152,10 @@ class SolarPanelOptimizer:
         def fitness_function(individual):
             return individual.calculate_fitness(latitude, inclination, season)
         
-        # Inicializar población
-        self.ga.initialize()
+        # Inicializar población con rangos apropiados
+        min_dist = 0.5
+        max_dist = 10.0
+        self.ga.initialize(min_distance=min_dist, max_distance=max_dist)
         
         # Ejecutar optimización
         results = self.ga.run(fitness_function)
@@ -162,8 +165,9 @@ class SolarPanelOptimizer:
         theoretical_distance = self._calculate_min_distance(latitude, inclination, season)
         
         # Calcular eficiencia
-        if theoretical_distance > 0:
-            efficiency = ((best_distance - theoretical_distance) / theoretical_distance) * 100
+        if theoretical_distance > 0 and theoretical_distance != float('inf'):
+            efficiency = 100 - (((best_distance - theoretical_distance) / theoretical_distance) * 100)
+            efficiency = max(0, min(100, efficiency))
         else:
             efficiency = 0
         
@@ -197,7 +201,7 @@ class SolarPanelOptimizer:
                    (self.panel_length * math.sin(inclination_rad)) / 
                    math.tan(alpha_min_rad))
         
-        return distance
+        return max(distance, 0.1)
     
     def _calculate_solar_angle(self, latitude, season):
         """Calcula el ángulo solar crítico"""
@@ -227,12 +231,9 @@ class SolarPanelOptimizer:
         ax1.grid(True, alpha=0.3)
         
         # Gráfico de distancia óptima
-        best_distances = []
-        for gen in range(len(history['generations'])):
-            # Extraer distancia del mejor individuo en cada generación
-            best_distances.append(results['final_population'].individuals[0].genes[0])
-        
-        ax2.plot(history['generations'], best_distances, 'g-', linewidth=2)
+        # Extraer distancias del mejor individuo histórico
+        ax2.axhline(y=results['optimal_distance'], color='g', linestyle='-', 
+                   label=f'Distancia óptima: {results["optimal_distance"]:.3f}m')
         ax2.axhline(y=results['theoretical_distance'], color='r', linestyle='--', 
                    label=f'Distancia teórica: {results["theoretical_distance"]:.3f}m')
         ax2.set_xlabel('Generación')

@@ -64,18 +64,28 @@ class Individual(ABC):
         if len(self.genes) != len(other.genes):
             raise ValueError("Los individuos deben tener el mismo número de genes")
         
-        # Cruce de un punto
-        crossover_point = np.random.randint(1, len(self.genes))
-        
-        genes1 = np.concatenate([
-            self.genes[:crossover_point],
-            other.genes[crossover_point:]
-        ])
-        
-        genes2 = np.concatenate([
-            other.genes[:crossover_point],
-            self.genes[crossover_point:]
-        ])
+        # Si solo hay un gen, no hay punto de cruce, solo copiamos
+        if len(self.genes) == 1:
+            # 50% de probabilidad de intercambiar genes
+            if np.random.random() < 0.5:
+                genes1 = other.genes.copy()
+                genes2 = self.genes.copy()
+            else:
+                genes1 = self.genes.copy()
+                genes2 = other.genes.copy()
+        else:
+            # Cruce de un punto para múltiples genes
+            crossover_point = np.random.randint(1, len(self.genes))
+            
+            genes1 = np.concatenate([
+                self.genes[:crossover_point],
+                other.genes[crossover_point:]
+            ])
+            
+            genes2 = np.concatenate([
+                other.genes[:crossover_point],
+                self.genes[crossover_point:]
+            ])
         
         child1 = self.__class__(genes=genes1)
         child2 = self.__class__(genes=genes2)

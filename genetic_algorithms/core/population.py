@@ -107,6 +107,13 @@ class Population:
     def _roulette_wheel_selection(self):
         """Implementa selección por ruleta"""
         fitness_values = [ind.fitness for ind in self.individuals]
+        
+        # Manejar fitness negativos
+        min_fitness = min(fitness_values)
+        if min_fitness < 0:
+            # Desplazar todos los valores para que sean positivos
+            fitness_values = [f - min_fitness + 1 for f in fitness_values]
+        
         total_fitness = sum(fitness_values)
         
         if total_fitness == 0:
@@ -143,23 +150,35 @@ class Population:
         
         # Elitismo: mantener el mejor individuo
         if self.best_individual:
-            new_individuals.append(self.best_individual)
+            # Crear una copia del mejor individuo
+            elite = self.individual_class(genes=self.best_individual.genes.copy())
+            elite.fitness = self.best_individual.fitness
+            new_individuals.append(elite)
         
         while len(new_individuals) < self.size:
-            # Seleccionar dos padres
-            parent1, parent2 = np.random.choice(parents, 2, replace=False)
+            # Seleccionar dos padres diferentes
+            if len(parents) > 1:
+                idx1, idx2 = np.random.choice(len(parents), 2, replace=False)
+                parent1, parent2 = parents[idx1], parents[idx2]
+            else:
+                parent1 = parent2 = parents[0]
             
             # Aplicar cruce
-            if np.random.random() < crossover_rate:
+            if np.random.random() < crossover_rate and parent1 != parent2:
                 child1, child2 = parent1.crossover(parent2)
             else:
-                child1, child2 = parent1.__class__(parent1.genes.copy()), parent2.__class__(parent2.genes.copy())
+                # Si no hay cruce, crear copias de los padres
+                child1 = self.individual_class(genes=parent1.genes.copy())
+                child2 = self.individual_class(genes=parent2.genes.copy())
             
             # Aplicar mutación
             child1.mutate(mutation_rate)
             child2.mutate(mutation_rate)
             
-            new_individuals.extend([child1, child2])
+            # Agregar hijos a la nueva población
+            new_individuals.append(child1)
+            if len(new_individuals) < self.size:
+                new_individuals.append(child2)
         
         # Ajustar tamaño si es necesario
         self.individuals = new_individuals[:self.size]
@@ -167,7 +186,16 @@ class Population:
     
     def get_statistics(self):
         """Obtiene estadísticas de la población actual"""
-        fitness_values = [ind.fitness for ind in self.individuals]
+        fitness_values = [ind.fitness for ind in self.individuals if ind.fitness is not None]
+        
+        if not fitness_values:
+            return {
+                'generation': self.generation,
+                'best_fitness': 0,
+                'average_fitness': 0,
+                'worst_fitness': 0,
+                'std_fitness': 0
+            }
         
         return {
             'generation': self.generation,
