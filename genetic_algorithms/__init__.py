@@ -12,8 +12,9 @@ Módulos principales:
 """
 
 __version__ = "1.0.0"
-__author__ = "Johan [Tu Nombre]"
-__email__ = "tu_email@email.com"
+__author__ = "Johan Sebastian Rojas Ramirez"
+__email__ = "johansrojas@ucundinamarca.edu.co"
+__contributors__ = ["Julian Lara Beltran"]
 
 # Importaciones principales para acceso directo
 from .core.genetic_algorithm import GeneticAlgorithm
